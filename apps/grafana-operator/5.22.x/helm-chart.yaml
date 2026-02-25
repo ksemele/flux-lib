@@ -8,6 +8,6 @@ spec:
   chart: grafana-operator
   version: '5.22.0'
   sourceRef:
-    kind: OCIRepository
+    kind: HelmRepository
     name: grafana
   interval: 1h
