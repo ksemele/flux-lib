@@ -1,0 +1,12 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: flux-lib
+  namespace: flux-system
+spec:
+  interval: 5m
+  url: git@github.com:ksemele/flux-lib.git
+  ref:
+    # branch: main
+    branch: f/lib-init
