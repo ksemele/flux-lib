@@ -9,14 +9,10 @@ spec:
   releaseName: grafana-operator
   targetNamespace: grafana-operator
   storageNamespace: grafana-operator
-  chart:
-    spec:
-      chart: grafana-operator
-      version: '5.22.0'
-      sourceRef:
-        kind: OCIRepository
-        name: grafana
-        namespace: grafana-operator
+  chartRef:
+    kind: HelmChart
+    name: grafana-operator
+    namespace: grafana-operator
   values:
     # Default values applied to every cluster/env.
     # Only set values that should be universal; leave cluster-specific

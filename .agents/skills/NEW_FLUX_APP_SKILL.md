@@ -21,8 +21,9 @@ Each application lives in `apps/<APP_NAME>/` and is composed of:
 |---|---|
 | `apps/<APP_NAME>/README.md` | Docs, helm commands, links, and notes |
 | `apps/<APP_NAME>/<VERSION>/repo.yaml` | Source object (HelmRepository, GitRepository, OCIRepository) |
+| `apps/<APP_NAME>/<VERSION>/helm-chart.yaml` | *(OCI only)* HelmChart linking to the OCIRepository |
 | `apps/<APP_NAME>/<VERSION>/helm-release.yaml` | HelmRelease with pinned version and default values |
-| `apps/<APP_NAME>/<VERSION>/kustomization.yaml` | Bundles repo.yaml + helm-release.yaml |
+| `apps/<APP_NAME>/<VERSION>/kustomization.yaml` | Bundles repo.yaml, helm-release.yaml, and any others |
 | `apps/<APP_NAME>/example/` | Real sync Kustomization example files |
 
 > **VERSION** is a folder named after the chart's minor series, e.g. `5.22.x`, `1.0.x`.
@@ -62,7 +63,7 @@ Pick the template matching `REPO_KIND`:
 
 ```yaml
 ---
-apiVersion: source.toolkit.fluxcd.io/v1beta2
+apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
   name: <REPO_NAME>
@@ -94,7 +95,7 @@ spec:
 
 ```yaml
 ---
-apiVersion: source.toolkit.fluxcd.io/v1beta2
+apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
 metadata:
   name: <REPO_NAME>
@@ -106,11 +107,31 @@ spec:
     tag: v<CHART_VERSION>
 ```
 
-#### 2b – `helm-release.yaml`
+#### 2b – `helm-chart.yaml` *(OCI Only)*
+
+If you use an `OCIRepository`, you **must** create a `HelmChart` resource to bridge it, as `HelmRelease` does not support `OCIRepository` directly in `sourceRef`.
 
 ```yaml
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmChart
+metadata:
+  name: <APP_NAME>
+  namespace: flux-system
+spec:
+  chart: <CHART_NAME>
+  version: '<CHART_VERSION>'
+  sourceRef:
+    kind: OCIRepository
+    name: <REPO_NAME>
+  interval: 1h
+```
+
+#### 2c – `helm-release.yaml`
+
+```yaml
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: <APP_NAME>
@@ -120,6 +141,8 @@ spec:
   releaseName: <APP_NAME>
   targetNamespace: <NAMESPACE>
   storageNamespace: <NAMESPACE>
+  
+  # Option 1: For HelmRepository or GitRepository
   chart:
     spec:
       chart: <CHART_NAME>
@@ -128,6 +151,13 @@ spec:
         kind: <REPO_KIND>
         name: <REPO_NAME>
         namespace: flux-system
+  
+  # Option 2: For OCIRepository (uncomment and remove `chart:` block above)
+  # chartRef:
+  #   kind: HelmChart
+  #   name: <APP_NAME>
+  #   namespace: flux-system
+  
   values:
     # Default values applied to every cluster/env.
     # Only set values that should be universal; leave cluster-specific
@@ -138,7 +168,7 @@ spec:
 > **Rule:** Only put values here that are safe and appropriate for *every*
 > cluster and environment. When in doubt, leave `values:` empty or commented out.
 
-#### 2c – `kustomization.yaml`
+#### 2d – `kustomization.yaml`
 
 ```yaml
 ---
@@ -146,11 +176,12 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - repo.yaml
+  # - helm-chart.yaml       # uncomment if using OCI
   - helm-release.yaml
   # - network-policy.yaml   # uncomment if you add one
 ```
 
-#### 2d – `network-policy.yaml` *(optional)*
+#### 2e – `network-policy.yaml` *(optional)*
 
 Only create this file when the app needs explicit ingress/egress control and the user directly asks for it.
 Adjust `podSelector`, ports, and CIDR to match the app.
@@ -285,8 +316,9 @@ Adjust chart version and values to match the official chart when available.
 Before committing, verify all of the following:
 
 - [ ] `apps/<APP_NAME>/<VERSION_FOLDER>/repo.yaml` created with correct source kind and URL
-- [ ] `apps/<APP_NAME>/<VERSION_FOLDER>/helm-release.yaml` created with correct `chart`, `version`, `sourceRef`, and `values`
-- [ ] `apps/<APP_NAME>/<VERSION_FOLDER>/kustomization.yaml` lists `repo.yaml` and `helm-release.yaml`
+- [ ] `apps/<APP_NAME>/<VERSION_FOLDER>/helm-chart.yaml` created if using `OCIRepository`
+- [ ] `apps/<APP_NAME>/<VERSION_FOLDER>/helm-release.yaml` created with correct `chart` or `chartRef`, `version`, `sourceRef` and `values`
+- [ ] `apps/<APP_NAME>/<VERSION_FOLDER>/kustomization.yaml` lists all created resources
 - [ ] `apps/<APP_NAME>/example/<APP_NAME>.yaml` is a real sync Kustomization (not a code block in README)
 - [ ] `apps/<APP_NAME>/example/kustomization.yaml` references the example file
 - [ ] `apps/<APP_NAME>/README.md` uses the concise format (docs, helm commands, links, versioned folder note)

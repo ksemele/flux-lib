@@ -1,0 +1,13 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmChart
+metadata:
+  name: grafana-operator
+  namespace: grafana-operator
+spec:
+  chart: grafana-operator
+  version: '5.22.0'
+  sourceRef:
+    kind: OCIRepository
+    name: grafana
+  interval: 1h
