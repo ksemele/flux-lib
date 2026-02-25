@@ -6,11 +6,12 @@ metadata:
   namespace: grafana-operator
 spec:
   interval: 5m
-  dependsOn:
-    - name: repos
+  # dependsOn:
+    # - name: repos
   sourceRef:
     kind: GitRepository
     name: flux-lib
+    namespace: flux-system
   path: ./apps/grafana-operator/5.22.x
   prune: false
   wait: true
