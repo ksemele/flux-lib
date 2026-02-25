@@ -1,0 +1,23 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: grafana-operator
+  namespace: grafana-operator
+spec:
+  interval: 5m
+  releaseName: grafana-operator
+  targetNamespace: grafana-operator
+  storageNamespace: grafana-operator
+  chart:
+    spec:
+      chart: grafana-operator
+      version: '5.22.0'
+      sourceRef:
+        kind: OCIRepository
+        name: grafana
+        namespace: grafana-operator
+  values:
+    # Default values applied to every cluster/env.
+    # Only set values that should be universal; leave cluster-specific
+    # overrides to custom-resources patches.
