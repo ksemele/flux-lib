@@ -6,7 +6,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 5m
-  url: https://github.com:ksemele/flux-lib.git
+  url: https://github.com/ksemele/flux-lib
   ref:
     # branch: main
     branch: f/lib-init
