@@ -1,0 +1,29 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: grafana-operator
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: alloy
+      sourceRef:
+        kind: HelmRepository
+        name: grafana
+      version: "5.22.x"
+  install:
+    crds: Create
+  upgrade:
+    crds: CreateReplace
+  driftDetection:
+    mode: enabled
+  values:
+    # https://github.com/grafana/alloy/blob/main/operations/helm/charts/alloy/values.yaml
+    # Configure Alloy to collect Kubernetes pod logs and write to the cluster Loki
+    # service. Adjust `url` if your Loki service is named differently.
+    alloy:
+      mounts:
+      extraEnv:
+        - name: CLUSTER_NAME
+          value: "cluster-0"

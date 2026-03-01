@@ -3,14 +3,11 @@
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
   "features": {
     "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
-      "version": "latest",
-      "helm": "latest",
+      "version": "1.35.2",
+      "helm": "4.1.1",
       "minikube": "none"
     },
-    "ghcr.io/devcontainers/features/node:1": {
-      "version": "lts"
-    },
-    "ghcr.io/devcontainers-contrib/features/flux2:1": {}
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
   },
   "customizations": {
     "vscode": {
@@ -26,5 +23,5 @@
       }
     }
   },
-  "postCreateCommand": "kubectl version --client && helm version && flux --version"
+  "postCreateCommand": "bash .devcontainer/setup.sh"
 }
