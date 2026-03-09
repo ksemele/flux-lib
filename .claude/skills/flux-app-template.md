@@ -1,5 +1,6 @@
 ---
 name: flux-app-template
+user-invocable: true
 description: >
   Scaffold a new Flux CD app component in apps/<APP_NAME>.
   Creates a versioned subfolder, repo source, helm-release, kustomization,
